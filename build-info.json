@@ -1,5 +1,6 @@
 {
+    "variant":  "release",
     "engine":  "4.7.2",
-    "sourceCommit":  "6f6710aac92157fe53d8e868149e259c76519210",
-    "builtAt":  "2026-10-12T18:24:20.9146322Z"
+    "sourceCommit":  "9b159903401e2ce35cd1453b7a4a10036a4c6db1",
+    "builtAt":  "2026-10-12T20:44:40.2688879Z"
 }
