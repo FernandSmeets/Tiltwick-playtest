@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<!-- No cover fit in the viewport: iOS keeps the page inside the safe area (notch, home bar). -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="theme-color" content="#1c140f">
 		<title>Tiltwick: Tiny Troubles</title>
 		<style>
 html, body, #canvas {
@@ -11,206 +14,225 @@ html, body, #canvas {
 	border: 0;
 }
 
-body {
-	color: white;
-	background-color: black;
+html, body {
+	width: 100%;
+	height: 100%;
+	background-color: #1c140f;
 	overflow: hidden;
+	/* No double-tap zoom, no pull-to-refresh, no text selection or callouts. */
 	touch-action: none;
+	overscroll-behavior: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
 }
 
 #canvas {
 	display: block;
+	touch-action: none;
 }
 
 #canvas:focus {
 	outline: none;
 }
 
-#status, #status-splash, #status-progress {
-	position: absolute;
-	left: 0;
-	right: 0;
-}
-
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
-}
-
 #status {
-	background-color: #242424;
+	position: absolute;
+	inset: 0;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	gap: 1.1rem;
+	padding: 2rem;
+	background: radial-gradient(circle at 50% 38%, #3a2618 0%, #1c140f 70%);
+	color: #f4dfb7;
+	font-family: 'Nunito', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+	text-align: center;
 	visibility: hidden;
 }
 
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
+#status-house {
+	width: 96px;
+	height: 96px;
 }
 
-#status-splash.show-image--false {
-	display: none;
+#status-title {
+	font-size: clamp(1.6rem, 6vw, 2.4rem);
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	margin: 0;
 }
 
-#status-splash.fullsize--true {
+#status-line {
+	font-size: 1.05rem;
+	color: #e8b34b;
+	margin: 0;
+}
+
+#status-bar {
+	width: min(320px, 80vw);
+	height: 14px;
+	border-radius: 7px;
+	background: #2b1d14;
+	border: 2px solid #e8b34b;
+	overflow: hidden;
+}
+
+#status-fill {
+	width: 0%;
 	height: 100%;
-	width: 100%;
-	object-fit: contain;
+	background: linear-gradient(90deg, #d98c3a, #f4c35b);
+	transition: width 0.2s ease-out;
 }
 
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
+#status-fill.waiting {
+	width: 35%;
+	animation: slide 1.2s ease-in-out infinite alternate;
 }
 
-#status-progress, #status-notice {
-	display: none;
+@keyframes slide {
+	from { margin-left: 0%; }
+	to { margin-left: 65%; }
 }
 
-#status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
+#status-amount {
+	font-size: 0.9rem;
+	color: rgba(244, 223, 183, 0.75);
+	min-height: 1.2em;
+	margin: 0;
 }
 
 #status-notice {
-	background-color: #5b3943;
-	border-radius: 0.5rem;
-	border: 1px solid #9b3943;
-	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-	line-height: 1.3;
-	margin: 0 2rem;
-	overflow: hidden;
-	padding: 1rem;
-	text-align: center;
-	z-index: 1;
+	display: none;
+	max-width: 30rem;
+	background: #2b1d14;
+	border: 2px solid #e8b34b;
+	border-radius: 14px;
+	padding: 1.2rem 1.4rem;
+	line-height: 1.45;
+	font-size: 1rem;
+}
+
+#status-notice small {
+	display: block;
+	margin-top: 0.8rem;
+	color: rgba(244, 223, 183, 0.6);
+	font-size: 0.8rem;
+	word-break: break-word;
 }
 		</style>
 		<meta name="robots" content="noindex,nofollow,noarchive"><link rel="icon" href="index.png"><meta name="referrer" content="no-referrer"><script src="level_files.js"></script><style>html,body{background:#101b25}#canvas{touch-action:none}</style>
 	</head>
 	<body>
 		<canvas id="canvas">
-			Your browser does not support the canvas tag.
+			Je browser kan dit spel niet tonen.
 		</canvas>
 
 		<noscript>
-			Your browser does not support JavaScript.
+			<p style="color:#f4dfb7;font-family:sans-serif;padding:2rem">Zet JavaScript aan om Tiltwick: Tiny Troubles te spelen.</p>
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
+			<svg id="status-house" viewBox="0 0 96 96" aria-hidden="true">
+				<polygon points="48,10 88,44 8,44" fill="#c4683f"/>
+				<rect x="18" y="44" width="60" height="42" rx="3" fill="#f1e1bf"/>
+				<rect x="40" y="58" width="16" height="28" rx="2" fill="#8a5a32"/>
+				<rect x="24" y="52" width="12" height="12" rx="2" fill="#7fb2c9"/>
+				<rect x="60" y="52" width="12" height="12" rx="2" fill="#7fb2c9"/>
+				<rect x="64" y="16" width="9" height="20" fill="#a84f34"/>
+			</svg>
+			<p id="status-title">Tiltwick: Tiny Troubles</p>
+			<p id="status-line">Het Tochthuisje wordt geladen…</p>
+			<div id="status-bar"><div id="status-fill" class="waiting"></div></div>
+			<p id="status-amount"></p>
 			<div id="status-notice"></div>
 		</div>
 
+		<script>
+// Load timing for the ?meet readout in the game (PlayMeter).
+window.tiltwickLoad = { shellMs: performance.now(), readyMs: 0 };
+// iOS Safari: no pinch or double-tap zoom of the page itself.
+document.addEventListener('gesturestart', (event) => event.preventDefault());
+document.addEventListener('dblclick', (event) => event.preventDefault(), { passive: false });
+		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":16870932,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":5623112,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
-	const statusOverlay = document.getElementById('status');
-	const statusProgress = document.getElementById('status-progress');
-	const statusNotice = document.getElementById('status-notice');
-
+	const status = document.getElementById('status');
+	const line = document.getElementById('status-line');
+	const bar = document.getElementById('status-bar');
+	const fill = document.getElementById('status-fill');
+	const amount = document.getElementById('status-amount');
+	const notice = document.getElementById('status-notice');
 	let initializing = true;
-	let statusMode = '';
 
-	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
-			return;
+	function showNotice(title, detail) {
+		console.error(detail || title);
+		line.style.display = 'none';
+		bar.style.display = 'none';
+		amount.style.display = 'none';
+		notice.textContent = title;
+		if (detail) {
+			const small = document.createElement('small');
+			small.textContent = detail;
+			notice.appendChild(small);
 		}
-		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
-			return;
-		}
-		statusOverlay.style.visibility = 'visible';
-		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-		statusMode = mode;
-	}
-
-	function setStatusNotice(text) {
-		while (statusNotice.lastChild) {
-			statusNotice.removeChild(statusNotice.lastChild);
-		}
-		const lines = text.split('\n');
-		lines.forEach((line) => {
-			statusNotice.appendChild(document.createTextNode(line));
-			statusNotice.appendChild(document.createElement('br'));
-		});
-	}
-
-	function displayFailureNotice(err) {
-		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
-		setStatusMode('notice');
+		notice.style.display = 'block';
+		status.style.visibility = 'visible';
 		initializing = false;
 	}
 
-	const missing = Engine.getMissingFeatures({
-		threads: GODOT_THREADS_ENABLED,
-	});
-
-	if (missing.length !== 0) {
-		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
-				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
-			});
-		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
+	function hasWebGL2() {
+		try {
+			return !!document.createElement('canvas').getContext('webgl2');
+		} catch (err) {
+			return false;
 		}
-	} else {
-		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},
-		}).then(() => {
-			setStatusMode('hidden');
-		}, displayFailureNotice);
 	}
+
+	const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+	if (!hasWebGL2()) {
+		showNotice('Deze browser kan het spel helaas niet tonen: WebGL 2 ontbreekt of staat uit. '
+			+ 'Probeer een recente Safari (iOS 15 of nieuwer), Chrome, Edge of Firefox, '
+			+ 'of zet hardwareversnelling aan in de instellingen van je browser.',
+			missing.length ? 'Ontbreekt: ' + missing.join(', ') : '');
+		return;
+	}
+	if (missing.length !== 0) {
+		showNotice('Deze browser mist iets wat het spel nodig heeft. Probeer een recente Safari, Chrome, Edge of Firefox.',
+			'Ontbreekt: ' + missing.join(', '));
+		return;
+	}
+
+	status.style.visibility = 'visible';
+	engine.startGame({
+		'onProgress': function (current, total) {
+			if (!initializing) {
+				return;
+			}
+			if (current > 0 && total > 0) {
+				fill.classList.remove('waiting');
+				fill.style.width = Math.min(100, (current / total) * 100).toFixed(1) + '%';
+				amount.textContent = (current / 1048576).toFixed(1) + ' van ' + (total / 1048576).toFixed(1) + ' MB';
+			} else {
+				fill.classList.add('waiting');
+				amount.textContent = '';
+			}
+		},
+	}).then(() => {
+		window.tiltwickLoad.readyMs = performance.now();
+		initializing = false;
+		status.remove();
+	}, (err) => {
+		showNotice('Het spel kon niet starten. Herlaad de pagina; helpt dat niet, probeer dan een andere browser.',
+			err instanceof Error ? err.message : String(err || ''));
+	});
 }());
 		</script>
 	</body>
